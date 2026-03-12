@@ -7,6 +7,7 @@ using FlowCore.Application.DTOs.Auth;
 using FlowCore.Application.Interfaces;
 using FlowCore.Domain.Entities;
 using FlowCore.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -25,7 +26,9 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto?> LoginAsync(LoginRequestDto dto)
     {
-        var users = await _userRepository.FindAsync(u => u.Username == dto.Username && u.IsActive);
+        var users = await _userRepository.FindAsync(
+            u => u.Username == dto.Username && u.IsActive,
+            include: q => q.Include(u => u.Role).Include(u => u.Department))!;
         var user = users.FirstOrDefault();
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
