@@ -47,7 +47,7 @@ public class AuthService : IAuthService
     {
         var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured");
         var jwtIssuer = _config["Jwt:Issuer"] ?? "FlowCore";
-        var expiryMinutes = int.Parse(_config["Jwt:ExpiryMinutes"] ?? "60");
+        var expiryMinutes = int.TryParse(_config["Jwt:ExpiryMinutes"], out var mins) ? mins : 60;
 
         var claims = new[]
         {

@@ -3,6 +3,7 @@ using FlowCore.Application.Interfaces;
 using FlowCore.Domain.Entities;
 using FlowCore.Domain.Enums;
 using FlowCore.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FlowCore.Application.Services;
 
@@ -30,12 +31,14 @@ public class RequestService : IRequestService
 
     public async Task<IEnumerable<RequestDto>> GetAllAsync(int userId, string role)
     {
-        IEnumerable<Request> requests;
+        Func<IQueryable<Request>, IQueryable<Request>> include =
+            q => q.Include(r => r.RequestType).Include(r => r.Requester);
 
+        IEnumerable<Request> requests;
         if (role == "Admin")
-            requests = await _requestRepository.GetAllAsync();
+            requests = await _requestRepository.FindAsync(_ => true, include);
         else
-            requests = await _requestRepository.FindAsync(r => r.RequesterId == userId);
+            requests = await _requestRepository.FindAsync(r => r.RequesterId == userId, include);
 
         return requests.Select(MapToDto);
     }
@@ -97,7 +100,8 @@ public class RequestService : IRequestService
 
         // Find active workflow for this request type
         var workflows = await _workflowRepository.FindAsync(
-            w => w.RequestTypeId == request.RequestTypeId && w.IsActive);
+            w => w.RequestTypeId == request.RequestTypeId && w.IsActive,
+            include: q => q.Include(w => w.Steps));
         var workflow = workflows.FirstOrDefault()
             ?? throw new InvalidOperationException("No active workflow found for this request type");
 
@@ -128,11 +132,15 @@ public class RequestService : IRequestService
 
     private async Task<List<User>> ResolveApproversAsync(Domain.Entities.WorkflowStep step)
     {
+        if (step.ApproverType == ApproverType.User)
+        {
+            if (!int.TryParse(step.ApproverValue, out var uid))
+                return new List<User>();
+            return (await _userRepository.FindAsync(u => u.Id == uid && u.IsActive)).ToList();
+        }
+
         return step.ApproverType switch
         {
-            ApproverType.User => (await _userRepository.FindAsync(
-                u => u.Id == int.Parse(step.ApproverValue) && u.IsActive)).ToList(),
-
             ApproverType.Role => (await _userRepository.FindAsync(
                 u => u.Role.Name == step.ApproverValue && u.IsActive)).ToList(),
 

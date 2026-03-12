@@ -2,6 +2,7 @@ using FlowCore.Application.DTOs.Workflow;
 using FlowCore.Application.Interfaces;
 using FlowCore.Domain.Entities;
 using FlowCore.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FlowCore.Application.Services;
 
@@ -20,13 +21,18 @@ public class WorkflowService : IWorkflowService
 
     public async Task<IEnumerable<WorkflowDto>> GetAllAsync()
     {
-        var workflows = await _workflowRepository.GetAllAsync();
+        var workflows = await _workflowRepository.FindAsync(
+            _ => true,
+            include: q => q.Include(w => w.Steps));
         return workflows.Select(MapToDto);
     }
 
     public async Task<WorkflowDto?> GetByIdAsync(int id)
     {
-        var workflow = await _workflowRepository.GetByIdAsync(id);
+        var workflows = await _workflowRepository.FindAsync(
+            w => w.Id == id,
+            include: q => q.Include(w => w.Steps));
+        var workflow = workflows.FirstOrDefault();
         return workflow == null ? null : MapToDto(workflow);
     }
 

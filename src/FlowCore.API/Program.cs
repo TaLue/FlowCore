@@ -1,10 +1,12 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using FlowCore.Application.Interfaces;
 using FlowCore.Application.Services;
 using FlowCore.Domain.Interfaces;
 using FlowCore.Infrastructure.Data;
 using FlowCore.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -52,6 +54,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
+
+// Rate limiting — 10 requests/minute per IP on login
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("login", cfg =>
+    {
+        cfg.Window = TimeSpan.FromMinutes(1);
+        cfg.PermitLimit = 10;
+        cfg.QueueLimit = 0;
+        cfg.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 // CORS for Vue.js frontend
 builder.Services.AddCors(options =>
@@ -101,10 +116,14 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedAsync(db, logger);
 }
 
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseSerilogRequestLogging();
+app.UseRateLimiter();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();

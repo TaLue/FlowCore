@@ -18,7 +18,10 @@ public class ApprovalController : ControllerBase
         _approvalService = approvalService;
     }
 
-    private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private int CurrentUserId =>
+        int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id)
+            ? id
+            : throw new UnauthorizedAccessException("Invalid user identity");
 
     [HttpGet("pending")]
     public async Task<IActionResult> GetPending()
@@ -36,7 +39,7 @@ public class ApprovalController : ControllerBase
             return Ok(new { message = "Approved successfully" });
         }
         catch (KeyNotFoundException) { return NotFound(); }
-        catch (UnauthorizedAccessException e) { return Forbid(e.Message); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
         catch (InvalidOperationException e) { return BadRequest(new { message = e.Message }); }
     }
 
@@ -49,7 +52,7 @@ public class ApprovalController : ControllerBase
             return Ok(new { message = "Rejected successfully" });
         }
         catch (KeyNotFoundException) { return NotFound(); }
-        catch (UnauthorizedAccessException e) { return Forbid(e.Message); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
         catch (InvalidOperationException e) { return BadRequest(new { message = e.Message }); }
     }
 
@@ -62,7 +65,7 @@ public class ApprovalController : ControllerBase
             return Ok(new { message = "Returned successfully" });
         }
         catch (KeyNotFoundException) { return NotFound(); }
-        catch (UnauthorizedAccessException e) { return Forbid(e.Message); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
         catch (InvalidOperationException e) { return BadRequest(new { message = e.Message }); }
     }
 }

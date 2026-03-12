@@ -3,6 +3,7 @@ using FlowCore.Application.Interfaces;
 using FlowCore.Domain.Entities;
 using FlowCore.Domain.Enums;
 using FlowCore.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FlowCore.Application.Services;
 
@@ -31,7 +32,9 @@ public class ApprovalService : IApprovalService
     public async Task<IEnumerable<PendingApprovalDto>> GetPendingAsync(int userId)
     {
         var pending = await _approvalRepository.FindAsync(
-            a => a.ApproverId == userId && a.Action == null);
+            a => a.ApproverId == userId && a.Action == null,
+            include: q => q.Include(a => a.Request).ThenInclude(r => r.RequestType)
+                           .Include(a => a.Request).ThenInclude(r => r.Requester));
 
         return pending.Select(a => new PendingApprovalDto
         {
@@ -64,7 +67,8 @@ public class ApprovalService : IApprovalService
 
         // Find workflow to get next step
         var workflows = await _workflowRepository.FindAsync(
-            w => w.RequestTypeId == request.RequestTypeId && w.IsActive);
+            w => w.RequestTypeId == request.RequestTypeId && w.IsActive,
+            include: q => q.Include(w => w.Steps));
         var workflow = workflows.FirstOrDefault();
         var nextStep = workflow?.Steps
             .OrderBy(s => s.StepOrder)
@@ -138,7 +142,11 @@ public class ApprovalService : IApprovalService
 
     private async Task<Approval> GetValidApprovalAsync(int approvalId, int approverId)
     {
-        var approval = await _approvalRepository.GetByIdAsync(approvalId)
+        var approvals = await _approvalRepository.FindAsync(
+            a => a.Id == approvalId,
+            include: q => q.Include(a => a.Request).ThenInclude(r => r.RequestType)
+                           .Include(a => a.Request).ThenInclude(r => r.Requester));
+        var approval = approvals.FirstOrDefault()
             ?? throw new KeyNotFoundException($"Approval {approvalId} not found");
 
         if (approval.ApproverId != approverId)
@@ -152,11 +160,15 @@ public class ApprovalService : IApprovalService
 
     private async Task<List<User>> ResolveApproversAsync(WorkflowStep step)
     {
+        if (step.ApproverType == ApproverType.User)
+        {
+            if (!int.TryParse(step.ApproverValue, out var uid))
+                return new List<User>();
+            return (await _userRepository.FindAsync(u => u.Id == uid && u.IsActive)).ToList();
+        }
+
         return step.ApproverType switch
         {
-            ApproverType.User => (await _userRepository.FindAsync(
-                u => u.Id == int.Parse(step.ApproverValue) && u.IsActive)).ToList(),
-
             ApproverType.Role => (await _userRepository.FindAsync(
                 u => u.Role.Name == step.ApproverValue && u.IsActive)).ToList(),
 

@@ -18,7 +18,10 @@ public class RequestController : ControllerBase
         _requestService = requestService;
     }
 
-    private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private int CurrentUserId =>
+        int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id)
+            ? id
+            : throw new UnauthorizedAccessException("Invalid user identity");
     private string CurrentUserRole => User.FindFirstValue(ClaimTypes.Role) ?? "User";
 
     [HttpGet]
@@ -52,7 +55,7 @@ public class RequestController : ControllerBase
             return Ok(result);
         }
         catch (KeyNotFoundException) { return NotFound(); }
-        catch (UnauthorizedAccessException e) { return Forbid(e.Message); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
         catch (InvalidOperationException e) { return BadRequest(new { message = e.Message }); }
     }
 
@@ -65,7 +68,7 @@ public class RequestController : ControllerBase
             return Ok(result);
         }
         catch (KeyNotFoundException) { return NotFound(); }
-        catch (UnauthorizedAccessException e) { return Forbid(e.Message); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
         catch (InvalidOperationException e) { return BadRequest(new { message = e.Message }); }
     }
 }

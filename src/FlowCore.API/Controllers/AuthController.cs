@@ -1,6 +1,7 @@
 using FlowCore.Application.DTOs.Auth;
 using FlowCore.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace FlowCore.API.Controllers;
 
@@ -16,6 +17,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
     {
         var result = await _authService.LoginAsync(dto);
