@@ -47,3 +47,6 @@ desktop.ini
 
 ## Example / Reference projects
 example/
+
+## Design specs (local only)
+spec/
