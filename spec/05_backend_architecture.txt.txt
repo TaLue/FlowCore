@@ -1,0 +1,48 @@
+BACKEND ARCHITECTURE (.NET)
+
+Recommended architecture: Clean Architecture
+
+Project Layers:
+
+API
+Application
+Domain
+Infrastructure
+
+
+API Layer
+
+Controllers:
+
+AuthController
+RequestController
+ApprovalController
+WorkflowController
+
+
+Application Layer
+
+Business logic services:
+
+RequestService
+ApprovalService
+WorkflowService
+NotificationService
+
+
+Domain Layer
+
+Entities:
+
+User
+Request
+Workflow
+Approval
+
+
+Infrastructure Layer
+
+- Entity Framework Core
+- Repositories
+- File Storage
+- Email Service

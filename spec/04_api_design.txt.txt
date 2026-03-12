@@ -1,0 +1,36 @@
+API DESIGN (.NET)
+
+Authentication
+
+POST /api/auth/login
+POST /api/auth/refresh
+
+
+Requests
+
+GET /api/requests
+GET /api/requests/{id}
+
+POST /api/requests
+PUT /api/requests/{id}
+
+
+Submit Request
+
+POST /api/requests/{id}/submit
+
+
+Approvals
+
+GET /api/approvals/pending
+
+POST /api/approvals/{id}/approve
+POST /api/approvals/{id}/reject
+POST /api/approvals/{id}/return
+
+
+Workflow Admin
+
+GET /api/workflows
+POST /api/workflows
+PUT /api/workflows/{id}

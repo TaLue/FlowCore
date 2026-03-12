@@ -1,0 +1,21 @@
+DEVELOPMENT TOOLS
+
+Backend
+
+- ASP.NET Core
+- Entity Framework Core
+- SQL Server
+
+Frontend
+
+- Vue.js
+- Axios
+- Bootstrap CSS
+
+Tools
+
+- Swagger
+- Postman
+- Docker
+- Git
+- Serilog logging

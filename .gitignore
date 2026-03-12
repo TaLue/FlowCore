@@ -1,0 +1,49 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+_ReSharper*/
+
+## Build output
+[Dd]ebug/
+[Rr]elease/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+
+## Environment / Secrets
+.env
+.env.*
+!.env.example
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+## Docker
+.dockerignore
+
+## OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## IDE
+.idea/
+.vs/
+*.swp
+*.swo
+
+## Claude settings
+.claude/
+
+## Example / Reference projects
+example/

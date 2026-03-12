@@ -1,0 +1,25 @@
+FRONTEND STRUCTURE (VUE)
+
+Main Pages:
+
+Login
+Dashboard
+Create Request
+My Requests
+Approval Inbox
+Admin Workflow
+
+
+Components
+
+RequestForm
+ApprovalPanel
+WorkflowViewer
+AttachmentUpload
+
+
+Dashboard Widgets
+
+- Requests per month
+- Requests by type
+- Pending approvals
