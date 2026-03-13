@@ -5,6 +5,7 @@ using FlowCore.Application.Services;
 using FlowCore.Domain.Interfaces;
 using FlowCore.Infrastructure.Data;
 using FlowCore.Infrastructure.Repositories;
+using FlowCore.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,9 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<IApprovalService, ApprovalService>();
 builder.Services.AddScoped<IWorkflowService, WorkflowService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
+// SMTP email — enabled via Smtp:Enabled=true in config/env
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
+builder.Services.AddScoped<INotificationService, SmtpNotificationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 // JWT Authentication
