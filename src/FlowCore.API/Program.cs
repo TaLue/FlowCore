@@ -32,6 +32,7 @@ builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<IApprovalService, ApprovalService>();
 builder.Services.AddScoped<IWorkflowService, WorkflowService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"]

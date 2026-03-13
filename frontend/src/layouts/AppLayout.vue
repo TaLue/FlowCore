@@ -59,18 +59,27 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const auth = useAuthStore()
 
-const navItems = [
+const baseItems = [
   { to: '/', icon: '📊', label: 'Dashboard' },
   { to: '/requests', icon: '📋', label: 'คำขออนุมัติ' },
   { to: '/approvals', icon: '✅', label: 'รออนุมัติ' },
   { to: '/workflows', icon: '⚙️', label: 'Workflow' },
 ]
+
+const adminItems = [
+  { to: '/admin/users', icon: '👥', label: 'ผู้ใช้งาน' },
+]
+
+const navItems = computed(() =>
+  auth.isAdmin ? [...baseItems, ...adminItems] : baseItems
+)
 
 function handleLogout() {
   auth.logout()

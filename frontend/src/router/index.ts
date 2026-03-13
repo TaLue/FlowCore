@@ -40,6 +40,12 @@ const router = createRouter({
           name: 'workflows',
           component: () => import('@/views/WorkflowsView.vue'),
         },
+        {
+          path: 'admin/users',
+          name: 'admin-users',
+          component: () => import('@/views/admin/UsersView.vue'),
+          meta: { requiresAdmin: true },
+        },
       ],
     },
   ],
@@ -51,6 +57,9 @@ router.beforeEach((to) => {
     return '/login'
   }
   if (to.path === '/login' && auth.isAuthenticated) {
+    return '/'
+  }
+  if (to.meta.requiresAdmin && !auth.isAdmin) {
     return '/'
   }
 })
