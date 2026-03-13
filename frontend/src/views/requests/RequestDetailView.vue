@@ -210,10 +210,10 @@ const STATUS_MAP: Record<number, { label: string; cls: string }> = {
 }
 
 function statusClass(s: string | number) {
-  return STATUS_MAP[s]?.cls ?? 'bg-gray-100 text-gray-600'
+  return STATUS_MAP[Number(s)]?.cls ?? 'bg-gray-100 text-gray-600'
 }
 function statusLabel(s: string | number) {
-  return STATUS_MAP[s]?.label ?? String(s)
+  return STATUS_MAP[Number(s)]?.label ?? String(s)
 }
 
 const ACTION_MAP: Record<string, { label: string; cls: string }> = {

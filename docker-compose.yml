@@ -8,6 +8,7 @@ services:
       - Jwt__Key=${JWT_KEY}
       - Jwt__Issuer=${JWT_ISSUER}
       - Jwt__ExpiryMinutes=${JWT_EXPIRY_MINUTES}
+      - Jwt__RefreshExpiryDays=${JWT_REFRESH_EXPIRY_DAYS:-7}
       - Cors__AllowedOrigins__0=${CORS_ORIGIN_0}
     volumes:
       - uploads:/app/uploads

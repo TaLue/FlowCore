@@ -146,11 +146,11 @@ const STATUS_MAP: Record<number, { label: string; cls: string }> = {
 }
 
 function statusClass(status: string | number) {
-  return STATUS_MAP[status]?.cls ?? 'bg-gray-100 text-gray-600'
+  return STATUS_MAP[Number(status)]?.cls ?? 'bg-gray-100 text-gray-600'
 }
 
 function statusLabel(status: string | number) {
-  return STATUS_MAP[status]?.label ?? String(status)
+  return STATUS_MAP[Number(status)]?.label ?? String(status)
 }
 
 function formatDate(date: string) {

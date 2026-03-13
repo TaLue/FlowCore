@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
     public DbSet<Approval> Approvals => Set<Approval>();
     public DbSet<Attachment> Attachments => Set<Attachment>();
     public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,5 +84,16 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<WorkflowStep>()
             .Property(s => s.ApproverType)
             .HasConversion<string>();
+
+        // RefreshToken - User
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne(rt => rt.User)
+            .WithMany()
+            .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(rt => rt.Token)
+            .IsUnique();
     }
 }

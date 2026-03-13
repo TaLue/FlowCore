@@ -16,11 +16,16 @@ namespace FlowCore.Application.Services;
 public class AuthService : IAuthService
 {
     private readonly IRepository<User> _userRepository;
+    private readonly IRepository<RefreshToken> _refreshTokenRepository;
     private readonly IConfiguration _config;
 
-    public AuthService(IRepository<User> userRepository, IConfiguration config)
+    public AuthService(
+        IRepository<User> userRepository,
+        IRepository<RefreshToken> refreshTokenRepository,
+        IConfiguration config)
     {
         _userRepository = userRepository;
+        _refreshTokenRepository = refreshTokenRepository;
         _config = config;
     }
 
@@ -34,20 +39,47 @@ public class AuthService : IAuthService
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return null;
 
-        return GenerateTokens(user);
+        return await GenerateTokensAsync(user);
     }
 
     public async Task<LoginResponseDto?> RefreshTokenAsync(string refreshToken)
     {
-        // Stub: in production, validate refresh token from DB
-        return await Task.FromResult<LoginResponseDto?>(null);
+        var tokens = await _refreshTokenRepository.FindAsync(
+            rt => rt.Token == refreshToken && !rt.IsRevoked,
+            include: q => q.Include(rt => rt.User)
+                           .ThenInclude(u => u.Role)
+                           .Include(rt => rt.User)
+                           .ThenInclude(u => u.Department));
+
+        var existing = tokens.FirstOrDefault();
+
+        if (existing == null)
+            return null;
+
+        if (existing.ExpiresAt < DateTime.UtcNow)
+        {
+            // Expired — revoke and return null
+            existing.IsRevoked = true;
+            await _refreshTokenRepository.UpdateAsync(existing);
+            return null;
+        }
+
+        if (!existing.User.IsActive)
+            return null;
+
+        // Revoke the old token (rotation)
+        existing.IsRevoked = true;
+        await _refreshTokenRepository.UpdateAsync(existing);
+
+        return await GenerateTokensAsync(existing.User);
     }
 
-    private LoginResponseDto GenerateTokens(User user)
+    private async Task<LoginResponseDto> GenerateTokensAsync(User user)
     {
         var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured");
         var jwtIssuer = _config["Jwt:Issuer"] ?? "FlowCore";
         var expiryMinutes = int.TryParse(_config["Jwt:ExpiryMinutes"], out var mins) ? mins : 60;
+        var refreshExpiryDays = int.TryParse(_config["Jwt:RefreshExpiryDays"], out var days) ? days : 7;
 
         var claims = new[]
         {
@@ -69,10 +101,22 @@ public class AuthService : IAuthService
             expires: expiry,
             signingCredentials: creds);
 
+        // Generate and persist refresh token
+        var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        var refreshToken = new RefreshToken
+        {
+            UserId = user.Id,
+            Token = rawToken,
+            ExpiresAt = DateTime.UtcNow.AddDays(refreshExpiryDays),
+            IsRevoked = false,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _refreshTokenRepository.AddAsync(refreshToken);
+
         return new LoginResponseDto
         {
             Token = new JwtSecurityTokenHandler().WriteToken(token),
-            RefreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+            RefreshToken = rawToken,
             ExpiresAt = expiry,
             User = new UserInfoDto
             {
