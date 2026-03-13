@@ -10,11 +10,74 @@
       </button>
     </div>
 
+    <!-- Filters -->
+    <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">ชื่อคำขอ</label>
+          <input
+            v-model="filterTitle"
+            type="text"
+            placeholder="ค้นหาหัวข้อ..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">ประเภท</label>
+          <select
+            v-model="filterTypeId"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">ทั้งหมด</option>
+            <option v-for="rt in requestTypes" :key="rt.id" :value="rt.id">{{ rt.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">สถานะ</label>
+          <select
+            v-model="filterStatus"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">ทั้งหมด</option>
+            <option v-for="(s, key) in STATUS_MAP" :key="key" :value="key">{{ s.label }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">ช่วงวันที่</label>
+          <div class="flex gap-1 items-center">
+            <input
+              v-model="filterDateFrom"
+              type="date"
+              class="w-full px-2 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <span class="text-gray-400 text-xs shrink-0">ถึง</span>
+            <input
+              v-model="filterDateTo"
+              type="date"
+              class="w-full px-2 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center justify-between mt-3">
+        <span class="text-xs text-gray-400">
+          แสดง {{ filteredRequests.length }} / {{ requests.length }} รายการ
+        </span>
+        <button
+          v-if="hasActiveFilter"
+          @click="clearFilters"
+          class="text-xs text-blue-600 hover:text-blue-800 font-medium"
+        >
+          ล้างตัวกรอง
+        </button>
+      </div>
+    </div>
+
     <!-- List -->
     <div class="bg-white rounded-xl border border-gray-200">
       <div v-if="loading" class="p-8 text-center text-gray-400">กำลังโหลด...</div>
-      <div v-else-if="requests.length === 0" class="p-8 text-center text-gray-400">
-        ยังไม่มีคำขอ
+      <div v-else-if="filteredRequests.length === 0" class="p-8 text-center text-gray-400">
+        {{ requests.length === 0 ? 'ยังไม่มีคำขอ' : 'ไม่พบรายการที่ตรงกับเงื่อนไข' }}
       </div>
       <table v-else class="w-full text-sm">
         <thead class="border-b border-gray-200">
@@ -26,7 +89,12 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr v-for="req in requests" :key="req.id" class="hover:bg-gray-50 cursor-pointer" @click="router.push('/requests/' + req.id)">
+          <tr
+            v-for="req in filteredRequests"
+            :key="req.id"
+            class="hover:bg-gray-50 cursor-pointer"
+            @click="router.push('/requests/' + req.id)"
+          >
             <td class="px-6 py-4 font-medium text-gray-900">{{ req.title }}</td>
             <td class="px-6 py-4 text-gray-500">{{ req.requestTypeName }}</td>
             <td class="px-6 py-4">
@@ -81,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import client from '@/api/client'
 
@@ -94,6 +162,52 @@ const showForm = ref(false)
 const submitting = ref(false)
 const formError = ref('')
 const form = ref({ title: '', description: '', requestTypeId: '' })
+
+// Filters
+const filterTitle = ref('')
+const filterTypeId = ref<number | ''>('')
+const filterStatus = ref<number | ''>('')
+const filterDateFrom = ref('')
+const filterDateTo = ref('')
+
+const hasActiveFilter = computed(
+  () =>
+    !!filterTitle.value ||
+    filterTypeId.value !== '' ||
+    filterStatus.value !== '' ||
+    !!filterDateFrom.value ||
+    !!filterDateTo.value,
+)
+
+const filteredRequests = computed(() =>
+  requests.value.filter((req) => {
+    if (filterTitle.value && !req.title.toLowerCase().includes(filterTitle.value.toLowerCase()))
+      return false
+    if (filterTypeId.value !== '' && req.requestTypeId !== Number(filterTypeId.value))
+      return false
+    if (filterStatus.value !== '' && Number(req.status) !== Number(filterStatus.value))
+      return false
+    if (filterDateFrom.value) {
+      const from = new Date(filterDateFrom.value)
+      from.setHours(0, 0, 0, 0)
+      if (new Date(req.createdAt) < from) return false
+    }
+    if (filterDateTo.value) {
+      const to = new Date(filterDateTo.value)
+      to.setHours(23, 59, 59, 999)
+      if (new Date(req.createdAt) > to) return false
+    }
+    return true
+  }),
+)
+
+function clearFilters() {
+  filterTitle.value = ''
+  filterTypeId.value = ''
+  filterStatus.value = ''
+  filterDateFrom.value = ''
+  filterDateTo.value = ''
+}
 
 onMounted(async () => {
   await Promise.all([loadRequests(), loadRequestTypes()])
