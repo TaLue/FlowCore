@@ -4,9 +4,9 @@
     <!-- Header -->
     <div class="flex items-start justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p class="text-gray-500 mt-1">
-          ยินดีต้อนรับกลับมา, <span class="font-medium text-gray-700">{{ auth.user?.username }}</span>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">
+          ยินดีต้อนรับกลับมา, <span class="font-medium text-gray-700 dark:text-gray-300">{{ auth.user?.username }}</span>
           &nbsp;·&nbsp;{{ todayTH }}
         </p>
       </div>
@@ -23,10 +23,10 @@
       <div
         v-for="card in statCards"
         :key="card.label"
-        class="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-3"
+        class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 flex flex-col gap-3"
       >
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-gray-500">{{ card.label }}</span>
+          <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ card.label }}</span>
           <span :class="card.iconBg" class="w-8 h-8 rounded-lg flex items-center justify-center text-base">
             {{ card.icon }}
           </span>
@@ -39,27 +39,27 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
       <!-- Recent Requests (2/3 width) -->
-      <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 class="text-sm font-semibold text-gray-900">คำขอล่าสุด</h2>
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+          <h2 class="text-sm font-semibold text-gray-900 dark:text-white">คำขอล่าสุด</h2>
           <RouterLink to="/requests" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
             ดูทั้งหมด →
           </RouterLink>
         </div>
-        <div v-if="loadingRequests" class="p-8 text-center text-gray-400 text-sm">กำลังโหลด...</div>
-        <div v-else-if="recentRequests.length === 0" class="p-8 text-center text-gray-400 text-sm">
+        <div v-if="loadingRequests" class="p-8 text-center text-gray-400 dark:text-gray-500 text-sm">กำลังโหลด...</div>
+        <div v-else-if="recentRequests.length === 0" class="p-8 text-center text-gray-400 dark:text-gray-500 text-sm">
           ยังไม่มีคำขอ
         </div>
-        <div v-else class="divide-y divide-gray-50">
+        <div v-else class="divide-y divide-gray-50 dark:divide-gray-700">
           <RouterLink
             v-for="req in recentRequests"
             :key="req.id"
             :to="'/requests/' + req.id"
-            class="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 transition-colors"
+            class="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-gray-900 truncate">{{ req.title }}</p>
-              <p class="text-xs text-gray-400 mt-0.5">{{ req.requestTypeName }} · {{ formatDate(req.createdAt) }}</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ req.title }}</p>
+              <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ req.requestTypeName }} · {{ formatDate(req.createdAt) }}</p>
             </div>
             <span :class="statusClass(req.status)" class="px-2 py-1 rounded-full text-xs font-medium shrink-0">
               {{ statusLabel(req.status) }}
@@ -69,26 +69,26 @@
       </div>
 
       <!-- Pending Approvals (1/3 width) -->
-      <div class="bg-white rounded-xl border border-gray-200">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 class="text-sm font-semibold text-gray-900">รออนุมัติจากฉัน</h2>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+          <h2 class="text-sm font-semibold text-gray-900 dark:text-white">รออนุมัติจากฉัน</h2>
           <RouterLink to="/approvals" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
             ดูทั้งหมด →
           </RouterLink>
         </div>
-        <div v-if="loadingApprovals" class="p-8 text-center text-gray-400 text-sm">กำลังโหลด...</div>
-        <div v-else-if="pendingApprovals.length === 0" class="p-8 text-center text-gray-400 text-sm">
+        <div v-if="loadingApprovals" class="p-8 text-center text-gray-400 dark:text-gray-500 text-sm">กำลังโหลด...</div>
+        <div v-else-if="pendingApprovals.length === 0" class="p-8 text-center text-gray-400 dark:text-gray-500 text-sm">
           ไม่มีรายการรออนุมัติ 🎉
         </div>
-        <div v-else class="divide-y divide-gray-50">
+        <div v-else class="divide-y divide-gray-50 dark:divide-gray-700">
           <div
             v-for="item in pendingApprovals"
             :key="item.approvalId"
             class="px-6 py-3.5 space-y-2"
           >
             <div>
-              <p class="text-sm font-medium text-gray-900 truncate">{{ item.requestTitle }}</p>
-              <p class="text-xs text-gray-400 mt-0.5">
+              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ item.requestTitle }}</p>
+              <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                 {{ item.requesterName }} · {{ item.requestTypeName }}
               </p>
             </div>
@@ -115,24 +115,24 @@
     </div>
 
     <!-- Quick Links (Admin) -->
-    <div v-if="auth.isAdmin" class="bg-white rounded-xl border border-gray-200 p-5">
-      <h2 class="text-sm font-semibold text-gray-900 mb-3">จัดการระบบ</h2>
+    <div v-if="auth.isAdmin" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <h2 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">จัดการระบบ</h2>
       <div class="flex flex-wrap gap-3">
         <RouterLink
           to="/admin/users"
-          class="flex items-center gap-2 px-4 py-2 border border-gray-200 hover:bg-gray-50 rounded-lg text-sm text-gray-700 font-medium transition-colors"
+          class="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 font-medium transition-colors"
         >
           👥 จัดการผู้ใช้งาน
         </RouterLink>
         <RouterLink
           to="/admin/departments"
-          class="flex items-center gap-2 px-4 py-2 border border-gray-200 hover:bg-gray-50 rounded-lg text-sm text-gray-700 font-medium transition-colors"
+          class="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 font-medium transition-colors"
         >
           🏢 จัดการแผนก
         </RouterLink>
         <RouterLink
           to="/workflows"
-          class="flex items-center gap-2 px-4 py-2 border border-gray-200 hover:bg-gray-50 rounded-lg text-sm text-gray-700 font-medium transition-colors"
+          class="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 font-medium transition-colors"
         >
           ⚙️ จัดการ Workflow
         </RouterLink>

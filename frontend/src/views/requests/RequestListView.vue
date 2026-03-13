@@ -1,7 +1,7 @@
 <template>
   <div class="p-8">
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gray-900">คำขออนุมัติ</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">คำขออนุมัติ</h1>
       <button
         @click="showForm = true"
         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
@@ -11,56 +11,56 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">ชื่อคำขอ</label>
+          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">ชื่อคำขอ</label>
           <input
             v-model="filterTitle"
             type="text"
             placeholder="ค้นหาหัวข้อ..."
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           />
         </div>
         <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">ประเภท</label>
+          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">ประเภท</label>
           <select
             v-model="filterTypeId"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           >
             <option value="">ทั้งหมด</option>
             <option v-for="rt in requestTypes" :key="rt.id" :value="rt.id">{{ rt.name }}</option>
           </select>
         </div>
         <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">สถานะ</label>
+          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">สถานะ</label>
           <select
             v-model="filterStatus"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           >
             <option value="">ทั้งหมด</option>
             <option v-for="(s, key) in STATUS_MAP" :key="key" :value="key">{{ s.label }}</option>
           </select>
         </div>
         <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">ช่วงวันที่</label>
+          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">ช่วงวันที่</label>
           <div class="flex gap-1 items-center">
             <input
               v-model="filterDateFrom"
               type="date"
-              class="w-full px-2 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             />
-            <span class="text-gray-400 text-xs shrink-0">ถึง</span>
+            <span class="text-gray-400 dark:text-gray-500 text-xs shrink-0">ถึง</span>
             <input
               v-model="filterDateTo"
               type="date"
-              class="w-full px-2 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             />
           </div>
         </div>
       </div>
       <div class="flex items-center justify-between mt-3">
-        <span class="text-xs text-gray-400">
+        <span class="text-xs text-gray-400 dark:text-gray-500">
           แสดง {{ filteredRequests.length }} / {{ requests.length }} รายการ
         </span>
         <button
@@ -74,35 +74,35 @@
     </div>
 
     <!-- List -->
-    <div class="bg-white rounded-xl border border-gray-200">
-      <div v-if="loading" class="p-8 text-center text-gray-400">กำลังโหลด...</div>
-      <div v-else-if="filteredRequests.length === 0" class="p-8 text-center text-gray-400">
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+      <div v-if="loading" class="p-8 text-center text-gray-400 dark:text-gray-500">กำลังโหลด...</div>
+      <div v-else-if="filteredRequests.length === 0" class="p-8 text-center text-gray-400 dark:text-gray-500">
         {{ requests.length === 0 ? 'ยังไม่มีคำขอ' : 'ไม่พบรายการที่ตรงกับเงื่อนไข' }}
       </div>
       <table v-else class="w-full text-sm">
-        <thead class="border-b border-gray-200">
-          <tr class="text-left text-gray-500">
+        <thead class="border-b border-gray-200 dark:border-gray-700">
+          <tr class="text-left text-gray-500 dark:text-gray-400">
             <th class="px-6 py-3 font-medium">หัวข้อ</th>
             <th class="px-6 py-3 font-medium">ประเภท</th>
             <th class="px-6 py-3 font-medium">สถานะ</th>
             <th class="px-6 py-3 font-medium">วันที่</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100">
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
           <tr
             v-for="req in filteredRequests"
             :key="req.id"
-            class="hover:bg-gray-50 cursor-pointer"
+            class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
             @click="router.push('/requests/' + req.id)"
           >
-            <td class="px-6 py-4 font-medium text-gray-900">{{ req.title }}</td>
-            <td class="px-6 py-4 text-gray-500">{{ req.requestTypeName }}</td>
+            <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ req.title }}</td>
+            <td class="px-6 py-4 text-gray-500 dark:text-gray-400">{{ req.requestTypeName }}</td>
             <td class="px-6 py-4">
               <span :class="statusClass(req.status)" class="px-2 py-1 rounded-full text-xs font-medium">
                 {{ statusLabel(req.status) }}
               </span>
             </td>
-            <td class="px-6 py-4 text-gray-500">{{ formatDate(req.createdAt) }}</td>
+            <td class="px-6 py-4 text-gray-500 dark:text-gray-400">{{ formatDate(req.createdAt) }}</td>
           </tr>
         </tbody>
       </table>
@@ -110,23 +110,23 @@
 
     <!-- Create Form Modal -->
     <div v-if="showForm" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">สร้างคำขอใหม่</h2>
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">สร้างคำขอใหม่</h2>
         <form @submit.prevent="submitRequest" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">หัวข้อ</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">หัวข้อ</label>
             <input v-model="form.title" type="text" required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">รายละเอียด</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">รายละเอียด</label>
             <textarea v-model="form.description" rows="3"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"></textarea>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">ประเภทคำขอ</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ประเภทคำขอ</label>
             <select v-model="form.requestTypeId" required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
               <option value="">-- เลือกประเภท --</option>
               <option v-for="rt in requestTypes" :key="rt.id" :value="rt.id">{{ rt.name }}</option>
             </select>
@@ -134,7 +134,7 @@
           <p v-if="formError" class="text-sm text-red-600">{{ formError }}</p>
           <div class="flex gap-3 pt-2">
             <button type="button" @click="showForm = false"
-              class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">
+              class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
               ยกเลิก
             </button>
             <button type="submit" :disabled="submitting"
