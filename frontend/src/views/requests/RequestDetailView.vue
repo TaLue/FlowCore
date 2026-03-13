@@ -51,6 +51,41 @@
         <p v-if="actionError" class="text-sm text-red-500 mt-3">{{ actionError }}</p>
       </div>
 
+      <!-- Attachments -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6 mb-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold text-gray-700">ไฟล์แนบ</h2>
+          <label class="cursor-pointer text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            {{ uploading ? 'กำลังอัปโหลด...' : 'อัปโหลดไฟล์' }}
+            <input type="file" class="hidden" @change="uploadFile" :disabled="uploading"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip,.txt" />
+          </label>
+        </div>
+        <p v-if="uploadError" class="text-xs text-red-500 mb-3">{{ uploadError }}</p>
+        <div v-if="attachments.length === 0" class="text-sm text-gray-400 py-4 text-center">
+          ยังไม่มีไฟล์แนบ
+        </div>
+        <div v-else class="space-y-2">
+          <div v-for="att in attachments" :key="att.id"
+            class="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 text-sm">
+            <div class="flex items-center gap-2 min-w-0">
+              <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+              </svg>
+              <span class="truncate text-gray-800">{{ att.fileName }}</span>
+              <span class="text-xs text-gray-400 shrink-0">{{ formatSize(att.fileSize) }}</span>
+            </div>
+            <a :href="`/api/requests/${route.params.id}/attachments/${att.id}/download`"
+              target="_blank"
+              class="text-xs text-blue-600 hover:text-blue-800 font-medium shrink-0 ml-2">ดาวน์โหลด</a>
+          </div>
+        </div>
+      </div>
+
       <!-- Approval History -->
       <div class="bg-white rounded-xl border border-gray-200 p-6">
         <h2 class="text-sm font-semibold text-gray-700 mb-4">ประวัติการอนุมัติ</h2>
@@ -95,11 +130,18 @@ const request = ref<any>(null)
 const loading = ref(true)
 const acting = ref(false)
 const actionError = ref('')
+const attachments = ref<any[]>([])
+const uploading = ref(false)
+const uploadError = ref('')
 
 onMounted(async () => {
   try {
-    const res = await client.get('/requests/' + route.params.id)
-    request.value = res.data
+    const [reqRes, attRes] = await Promise.all([
+      client.get('/requests/' + route.params.id),
+      client.get('/requests/' + route.params.id + '/attachments'),
+    ])
+    request.value = reqRes.data
+    attachments.value = Array.isArray(attRes.data) ? attRes.data : (attRes.data?.value ?? [])
   } catch {
     request.value = null
   } finally {
@@ -115,6 +157,36 @@ const canSubmit = computed(() => {
 const sortedApprovals = computed(() =>
   [...(request.value?.approvals ?? [])].sort((a, b) => a.stepOrder - b.stepOrder)
 )
+
+async function uploadFile(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  uploadError.value = ''
+  if (file.size > 10 * 1024 * 1024) {
+    uploadError.value = 'ไฟล์ขนาดเกิน 10 MB'; return
+  }
+  uploading.value = true
+  try {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await client.post('/requests/' + route.params.id + '/attachments', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    attachments.value.push(res.data)
+  } catch (e: any) {
+    uploadError.value = e.response?.data?.message ?? 'อัปโหลดไม่สำเร็จ'
+  } finally {
+    uploading.value = false
+    input.value = ''
+  }
+}
+
+function formatSize(bytes: number) {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / 1024 / 1024).toFixed(1) + ' MB'
+}
 
 async function submitRequest() {
   acting.value = true

@@ -56,6 +56,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 
+// Allow up to 10 MB multipart file uploads
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
+{
+    o.MultipartBodyLengthLimit = 10 * 1024 * 1024;
+});
+builder.WebHost.ConfigureKestrel(k =>
+    k.Limits.MaxRequestBodySize = 10 * 1024 * 1024);
+
 // Rate limiting — 10 requests/minute per IP on login
 builder.Services.AddRateLimiter(options =>
 {

@@ -9,6 +9,8 @@ services:
       - Jwt__Issuer=${JWT_ISSUER}
       - Jwt__ExpiryMinutes=${JWT_EXPIRY_MINUTES}
       - Cors__AllowedOrigins__0=${CORS_ORIGIN_0}
+    volumes:
+      - uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -31,3 +33,4 @@ services:
 
 volumes:
   pgdata:
+  uploads:
