@@ -45,7 +45,15 @@ public class RequestService : IRequestService
 
     public async Task<RequestDto?> GetByIdAsync(int id, int userId, string role)
     {
-        var request = await _requestRepository.GetByIdAsync(id);
+        var results = await _requestRepository.FindAsync(
+            r => r.Id == id,
+            include: q => q
+                .Include(r => r.RequestType)
+                .Include(r => r.Requester)
+                .Include(r => r.Approvals).ThenInclude(a => a.Approver)
+                .Include(r => r.Attachments));
+
+        var request = results.FirstOrDefault();
         if (request == null) return null;
 
         if (role != "Admin" && request.RequesterId != userId) return null;

@@ -26,7 +26,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr v-for="req in requests" :key="req.id" class="hover:bg-gray-50">
+          <tr v-for="req in requests" :key="req.id" class="hover:bg-gray-50 cursor-pointer" @click="router.push('/requests/' + req.id)">
             <td class="px-6 py-4 font-medium text-gray-900">{{ req.title }}</td>
             <td class="px-6 py-4 text-gray-500">{{ req.requestTypeName }}</td>
             <td class="px-6 py-4">
@@ -82,7 +82,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import client from '@/api/client'
+
+const router = useRouter()
 
 const requests = ref<any[]>([])
 const requestTypes = ref<any[]>([])
@@ -108,14 +111,10 @@ async function loadRequests() {
 
 async function loadRequestTypes() {
   try {
-    const res = await client.get('/requests/types')
-    requestTypes.value = res.data ?? []
+    const res = await client.get('/request-types')
+    requestTypes.value = Array.isArray(res.data) ? res.data : (res.data?.value ?? [])
   } catch {
-    // fallback
-    requestTypes.value = [
-      { id: 1, name: 'Leave Request' },
-      { id: 2, name: 'Purchase Request' },
-    ]
+    requestTypes.value = []
   }
 }
 
@@ -138,17 +137,12 @@ async function submitRequest() {
   }
 }
 
-const STATUS_MAP: Record<string | number, { label: string; cls: string }> = {
+const STATUS_MAP: Record<number, { label: string; cls: string }> = {
   0: { label: 'ร่าง', cls: 'bg-gray-100 text-gray-600' },
-  Draft: { label: 'ร่าง', cls: 'bg-gray-100 text-gray-600' },
-  1: { label: 'ส่งแล้ว', cls: 'bg-blue-100 text-blue-700' },
-  Submitted: { label: 'ส่งแล้ว', cls: 'bg-blue-100 text-blue-700' },
-  2: { label: 'กำลังดำเนินการ', cls: 'bg-yellow-100 text-yellow-700' },
-  InProgress: { label: 'กำลังดำเนินการ', cls: 'bg-yellow-100 text-yellow-700' },
-  3: { label: 'อนุมัติแล้ว', cls: 'bg-green-100 text-green-700' },
-  Approved: { label: 'อนุมัติแล้ว', cls: 'bg-green-100 text-green-700' },
-  4: { label: 'ปฏิเสธ', cls: 'bg-red-100 text-red-700' },
-  Rejected: { label: 'ปฏิเสธ', cls: 'bg-red-100 text-red-700' },
+  1: { label: 'รอดำเนินการ', cls: 'bg-blue-100 text-blue-700' },
+  2: { label: 'อนุมัติแล้ว', cls: 'bg-green-100 text-green-700' },
+  3: { label: 'ปฏิเสธ', cls: 'bg-red-100 text-red-700' },
+  4: { label: 'ส่งกลับแก้ไข', cls: 'bg-orange-100 text-orange-700' },
 }
 
 function statusClass(status: string | number) {
