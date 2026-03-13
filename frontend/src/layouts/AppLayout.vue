@@ -75,6 +75,7 @@ const baseItems = [
 
 const adminItems = [
   { to: '/admin/users', icon: '👥', label: 'ผู้ใช้งาน' },
+  { to: '/admin/departments', icon: '🏢', label: 'แผนก' },
 ]
 
 const navItems = computed(() =>
